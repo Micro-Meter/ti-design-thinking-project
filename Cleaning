@@ -1,78 +1,45 @@
 /*
- * WET AND DRY CLEANING MECHANISM
+ * WATER PUMP ONLY CLEANING MECHANISM
  * 
  * Wiring:
- * - WET_TRIGGER_PIN (Pin 2): Pull LOW for water + brush.
- * - DRY_TRIGGER_PIN (Pin 3): Pull LOW for brush only.
+ * - TRIGGER_PIN (Pin 2): Pull LOW to run the water pump.
  * - PUMP_PIN (Pin 8): Connect to the water pump relay/driver.
- * - BRUSH_PIN (Pin 9): Connect to the cleaning motor relay/driver.
  */
 
-#define WET_TRIGGER_PIN 2
-#define DRY_TRIGGER_PIN 3
+#define TRIGGER_PIN 2
 #define PUMP_PIN 8
-#define BRUSH_PIN 9
 
-// Timing settings (in milliseconds)
-const int PRE_WET_TIME = 2000;    
-const int SCRUB_TIME = 5000;      
-const int POST_DRY_TIME = 2000;   
-const int DRY_CLEAN_TIME = 6000;  // How long the dry brush runs
+// Timing setting (in milliseconds)
+const int PUMP_TIME = 5000; // Adjust how long the pump runs
 
 void setup() {
   Serial.begin(9600);
   
-  pinMode(WET_TRIGGER_PIN, INPUT_PULLUP);
-  pinMode(DRY_TRIGGER_PIN, INPUT_PULLUP);
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
   pinMode(PUMP_PIN, OUTPUT);
-  pinMode(BRUSH_PIN, OUTPUT);
 
   digitalWrite(PUMP_PIN, LOW);
-  digitalWrite(BRUSH_PIN, LOW);
   
-  Serial.println("Cleaning Module Ready.");
+  Serial.println("Pump Module Ready.");
 }
 
 void loop() {
-  if (digitalRead(WET_TRIGGER_PIN) == LOW) {
-    Serial.println("WET cleaning triggered!");
-    executeWetCleaning();
-  } 
-  else if (digitalRead(DRY_TRIGGER_PIN) == LOW) {
-    Serial.println("DRY cleaning triggered!");
-    executeDryCleaning();
+  if (digitalRead(TRIGGER_PIN) == LOW) {
+    Serial.println("Cleaning triggered!");
+    executeCleaning();
   }
   
   delay(100); 
 }
 
-void executeWetCleaning() {
+void executeCleaning() {
   Serial.println("Pump ON");
   digitalWrite(PUMP_PIN, HIGH);
-  delay(PRE_WET_TIME);
+  
+  delay(PUMP_TIME); // Run pump for the set duration
 
-  Serial.println("Brush ON");
-  digitalWrite(BRUSH_PIN, HIGH);
-  delay(SCRUB_TIME);
-
-  Serial.println("Pump OFF. Brushing to dry...");
+  Serial.println("Pump OFF. Cycle complete.");
   digitalWrite(PUMP_PIN, LOW);
-  delay(POST_DRY_TIME);
-
-  Serial.println("Brush OFF. Cycle complete.");
-  digitalWrite(BRUSH_PIN, LOW);
   
-  delay(3000); // Cooldown
-}
-
-void executeDryCleaning() {
-  Serial.println("Brush ON (Dry Mode)");
-  digitalWrite(BRUSH_PIN, HIGH);
-  
-  delay(DRY_CLEAN_TIME);
-
-  Serial.println("Brush OFF. Cycle complete.");
-  digitalWrite(BRUSH_PIN, LOW);
-  
-  delay(3000); // Cooldown
+  delay(3000); // Cooldown to prevent rapid re-triggering
 }
